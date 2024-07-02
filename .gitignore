@@ -1,6 +1,7 @@
 doc_crm/doc_crm_project
 doc_crm/doc_crm_backend/config.py
 *.env
+*firebase_acc_key.json
 doc_crm/doc_crm_backend/firebase_acc_key.json
 
 # dependencies
