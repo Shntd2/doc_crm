@@ -3,6 +3,7 @@ from reg_login_and_logout import registration_app
 import os
 from werkzeug.utils import safe_join
 
+
 def create_app():
     # Set the static folder and URL path
     static_folder = os.getenv('STATIC_FOLDER', '../doc_crm_frontend/build')
@@ -34,3 +35,4 @@ if __name__ == '__main__':
 
     app = create_app()
     app.run(debug=debug_mode, port=port)
+    
