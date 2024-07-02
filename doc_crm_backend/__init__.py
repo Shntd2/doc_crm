@@ -1,12 +1,14 @@
 from flask import Flask, send_from_directory
 from reg_login_and_logout import registration_app
-import os
+from flask_cors import CORS
 from werkzeug.utils import safe_join
-
+import os
 
 def create_app():
-
     app = Flask(__name__, static_folder='../doc_crm_frontend/build', static_url_path='')
+
+    # Enhanced CORS configuration
+    CORS(app, resources={r"/registration/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://127.0.0.1:5000"]}}, supports_credentials=True, intercept_exceptions=True) 
 
     # Register the blueprint with the URL prefix for API routes
     app.register_blueprint(registration_app, url_prefix='/registration')
@@ -24,12 +26,10 @@ def create_app():
 
     return app
 
-
 if __name__ == '__main__':
-    # Get the debug mode and port from environment variables or set defaults
-    debug_mode = os.getenv('FLASK_DEBUG', 'True') == 'True'
-    port = int(os.getenv('PORT', 5000))
+    # Hardcoded values for debug mode and port
+    debug_mode = True  # Set to False in production
+    port = 5000  # Default port for Flask
 
     app = create_app()
     app.run(debug=debug_mode, port=port)
-    

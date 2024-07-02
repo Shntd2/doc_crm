@@ -4,7 +4,6 @@ from config import SECRET_KEY, PATH_TO_REG_LOGIN_PAGE, FIREBASE_API_URL, FIREBAS
 # import firebase
 from flask import Flask, Blueprint, request, jsonify, g, send_from_directory
 from flask_bcrypt import Bcrypt
-from flask_cors import CORS
 import jwt
 import datetime
 import re
@@ -12,13 +11,33 @@ import os
 
 
 app = Flask(__name__)
-CORS(app)  # allows only requests from Reacts localhost:3000
 bcrypt = Bcrypt(app)
 
 registration_app = Blueprint(
     'registration', __name__, static_folder='../doc_crm/doc_crm_frontend/build', static_url_path='/static'
 )
 # set the static folders path where static assets for React app are stored
+
+# Helper function to interact with Firebase Realtime Database
+def firebase_request(method, endpoint, data=None, params=None):
+    try:
+        url = f'{FIREBASE_API_URL}/{endpoint}.json'
+        if method == 'GET':
+            response = requests.get(url, params=params)
+        elif method == 'PUT':
+            response = requests.put(url, json=data, params=params)
+        elif method == 'POST':
+            response = requests.post(url, json=data, params=params)
+        elif method == 'DELETE':
+            response = requests.delete(url, params=params)
+        else:
+            raise ValueError('Unsupported HTTP method')
+        
+        response.raise_for_status()  # Raises a HTTPError if the response code is 4xx, 5xx
+        return response.json() if response.text else None
+    except requests.exceptions.RequestException as e:
+        print(f"Firebase request error: {e}")
+        return None
 
 
 # connects to the registration page in React part
@@ -50,11 +69,11 @@ def check_blacklist():
     if auth_header:
         try:
             token = auth_header.split(' ')[1]
-            decoded_token = jwt.decode(token, [SECRET_KEY], algorithms=['HS256'])
+            decoded_token = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
 
             # check if token is blacklisted
-            blacklist_response = requests.get(f'{FIREBASE_API_URL}/blacklist/{token}.json')
-            if blacklist_response.ok and blacklist_response.json() is not None:
+            blacklist_response = firebase_request('GET', f'blacklist/{token}')
+            if blacklist_response is not None:
                 return jsonify({'message': 'Token has been invalidated'}), 401
 
             g.current_user = decoded_token
@@ -79,7 +98,7 @@ def register():
         company_name = data.get('companyName')
 
         # Basic validation
-        if not name or not surname or not email or not password:
+        if not all([name, surname, email, password]):
             return jsonify({'message': 'Missing required fields'}), 400
 
         # Check if the email is valid
@@ -87,8 +106,8 @@ def register():
             return jsonify({'message': 'Invalid email address'}), 400
 
         # Check if the user already exists
-        user_response = requests.get(f'{FIREBASE_API_URL}/users/{email}.json', params={'key': FIREBASE_CONFIG['apiKey']})
-        if user_response.ok and user_response.json() is not None:
+        user_response = firebase_request('GET', f'users/{email}', params={'key': FIREBASE_CONFIG['apiKey']})
+        if user_response is not None:
             return jsonify({'message': 'Email already registered'}), 400
 
         # Hash the password
@@ -101,9 +120,9 @@ def register():
             'password': hashed_password,
             'company_name': company_name
         }
-        user_response = requests.put(f'{FIREBASE_API_URL}/users/{email}.json', json=user_data, params={'key': FIREBASE_CONFIG['apiKey']})
+        user_response = firebase_request('PUT', f'users/{email}', data=user_data, params={'key': FIREBASE_CONFIG['apiKey']})
 
-        if user_response.ok:
+        if user_response is not None:
             return jsonify({'message': 'User registered successfully'}), 201
         else:
             return jsonify({'message': 'Failed to register user'}), 500
@@ -130,8 +149,8 @@ def login():
         if not user_response.ok or user_response.json() is None:
             return jsonify({'message': 'Invalid email or password'}), 401
 
-        user_data = user_response.json()
-        if not bcrypt.check_password_hash(user_data['password'], password):
+        user_response = firebase_request('GET', f'users/{email}', params={'key': FIREBASE_CONFIG['apiKey']})
+        if user_response is None or not bcrypt.check_password_hash(user_response['password'], password):
             return jsonify({'message': 'Invalid email or password'}), 401
 
         # Generate JWT token
@@ -155,12 +174,13 @@ def logout():
             token = auth_header.split(" ")[1]
 
             # Add the token to the blacklist
-            blacklist_response = requests.put(f'{FIREBASE_API_URL}/blacklist/{token}.json', json={
+            blacklist_data = {
                 'token': token,
                 'blacklisted_on': datetime.datetime.now(datetime.timezone.utc).isoformat()
-            }, params={'key': FIREBASE_CONFIG['apiKey']})
+            }
+            blacklist_response = firebase_request('PUT', f'blacklist/{token}', data=blacklist_data, params={'key': FIREBASE_CONFIG['apiKey']})
 
-            if blacklist_response.ok:
+            if blacklist_response is not None:
                 return jsonify({'message': 'Logout successful'}), 200
             else:
                 return jsonify({'message': 'Failed to blacklist token'}), 500

@@ -13,6 +13,7 @@ const Registration = () => {
   });
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,16 +25,20 @@ const Registration = () => {
 
   const handleRegistration = async () => {
     try {
-      // Log registration data to console
+      setError(null);  // Clear previous errors
       console.log('Registration Data:', formData);
 
-      // Simulate backend API call (replace with actual backend URL)
-      const response = await axios.post('http://localhost:3000/api/register', formData);
-      console.log('User data sent successfully:', response.data);
+      const response = await axios.post('http://localhost:5000/registration/api/register', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
 
+      console.log('User registered successfully:', response.data);
       setRegistrationSuccess(true);
     } catch (error) {
-      console.error('Error:', error.message);
+      console.error('Error:', error.response ? error.response.data : error.message);
+      setError(error.response ? error.response.data.message : 'Network Error');
     }
   };
 
@@ -48,6 +53,7 @@ const Registration = () => {
     });
     setRegistrationSuccess(false);
     setLoginSuccess(false);
+    setError(null); // Clear errors when switching forms
   };
 
   return (
@@ -56,6 +62,7 @@ const Registration = () => {
         formData.isRegistering ? (
           <form onSubmit={(e) => { e.preventDefault(); handleRegistration(); }}>
             <h2>User Registration</h2>
+            {error && <p className="error-message">{error}</p>}
             <div>
               <label htmlFor="name">Name:</label>
               <input
@@ -146,8 +153,8 @@ const Registration = () => {
           </form>
         )
       ) : (
-        <div className="login-success-message">
-          <p>You have Successfully Logged in</p>
+        <div className="success-message">
+          <p>{registrationSuccess ? 'You have registered successfully!' : 'You have logged in successfully!'}</p>
         </div>
       )}
     </div>
