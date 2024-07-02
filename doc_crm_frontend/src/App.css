@@ -1,0 +1,52 @@
+*{
+    margin:0px;
+    padding:0px;
+    box-sizing: border-box;
+}
+/* .div{
+    width: 40px;
+    height: 40px;
+    background-color:white;
+    border:1px solid black;
+    display:inline-block;
+
+   
+}
+.div:hover {
+    background-color: hwb(60 52% 7%);
+  };
+   */
+
+
+  button{
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;;
+        display:block;
+        margin-left:400px;
+        margin-top:100px;
+        border: 1px solid white;
+  }
+  .Redcolor{
+         width: 100px;
+            height: 100px;
+            display:block;
+            background-color: red;
+         border-radius: 50%;;
+  }
+
+  .Yellowcolor{
+    width: 100px;
+    height: 100px;
+    display:block;
+    background-color: yellow;
+ border-radius: 50%;;
+  }
+
+  .Greencolor{
+    width: 100px;
+    height: 100px;
+    display:block;
+    background-color: Green;
+ border-radius: 50%;;
+  }

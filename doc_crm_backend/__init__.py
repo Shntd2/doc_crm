@@ -5,14 +5,11 @@ from werkzeug.utils import safe_join
 
 
 def create_app():
-    # Set the static folder and URL path
-    static_folder = os.getenv('STATIC_FOLDER', '../doc_crm_frontend/build')
-    static_url_path = os.getenv('STATIC_URL_PATH', '')
 
-    app = Flask(__name__, static_folder=static_folder, static_url_path=static_url_path)
+    app = Flask(__name__, static_folder='../doc_crm_frontend/build', static_url_path='')
 
     # Register the blueprint with the URL prefix for API routes
-    app.register_blueprint(registration_app, url_prefix='/api')
+    app.register_blueprint(registration_app, url_prefix='/registration')
 
     # Serve static files for the React app
     @app.route('/', defaults={'path': ''})
