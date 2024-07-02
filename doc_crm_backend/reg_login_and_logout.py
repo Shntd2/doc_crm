@@ -1,7 +1,7 @@
 from werkzeug.utils import safe_join
-# import firebase_admin
-from config import SECRET_KEY, PATH_TO_REG_LOGIN_PAGE
-# from firebase_admin import credentials, firestore
+import firebase_admin
+from config import SECRET_KEY, PATH_TO_REG_LOGIN_PAGE, FIREBASE_API
+from firebase_admin import credentials, firestore
 from flask import Flask, Blueprint, request, jsonify, g, send_from_directory
 from flask_bcrypt import Bcrypt
 from flask_cors import CORS
@@ -16,11 +16,11 @@ CORS(app, origins=['http://localhost:3000'])  # allows only requests from Reacts
 bcrypt = Bcrypt(app)
 
 # Firebase
-# cred = credentials.Certificate(FIREBASE_ADMIN_SDK)
-# firebase_admin.initialize_app(cred)
+cred = credentials.Certificate(FIREBASE_API)
+firebase_admin.initialize_app(cred)
 
 # Firestore database instance
-# db = firestore.client()
+db = firestore.client()
 
 registration_app = Blueprint(
     'registration', __name__, static_folder='../doc_crm/doc_crm_frontend/build', static_url_path='/static'
