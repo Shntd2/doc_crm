@@ -156,7 +156,7 @@ def login():
 
 
 # Logout
-@registration_app.route('/logout', methods=['POST'])
+@registration_app.route('/api/logout', methods=['POST'])
 def logout():
     try:
         auth_header = request.headers.get('Authorization')
