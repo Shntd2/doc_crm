@@ -1,7 +1,7 @@
 doc_crm/doc_crm_project
 doc_crm/doc_crm_backend/config.py
 *.env
-doc_crm/doc_crm_backend/firebase_acc_key.txt
+doc_crm/doc_crm_backend/firebase_acc_key.json
 
 # dependencies
 doc_crm_frontend/node_modules
