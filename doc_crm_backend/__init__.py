@@ -8,7 +8,7 @@ def create_app():
     app = Flask(__name__, static_folder='../doc_crm_frontend/build', static_url_path='')
 
     # Enhanced CORS configuration
-    CORS(app, resources={r"/registration/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000", "http://127.0.0.1:5000"]}}, supports_credentials=True, intercept_exceptions=True) 
+    CORS(app, resources={r"/registration/*": {"origins": "*"}}, supports_credentials=True, intercept_exceptions=True) 
 
     # Register the blueprint with the URL prefix for API routes
     app.register_blueprint(registration_app, url_prefix='/registration')
