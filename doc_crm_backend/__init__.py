@@ -4,6 +4,7 @@ from flask_cors import CORS
 from werkzeug.utils import safe_join
 import os
 
+
 def create_app():
     app = Flask(__name__, static_folder='../doc_crm_frontend/build', static_url_path='')
 
@@ -17,14 +18,22 @@ def create_app():
     @app.route('/', defaults={'path': ''})
     @app.route('/<path:path>')
     def serve_static(path):
-        # Safely join the path to the static folder
-        file_path = safe_join(app.static_folder, path)
-        if path != '' and os.path.exists(file_path):
-            return send_from_directory(app.static_folder, path)
-        else:
-            return send_from_directory(app.static_folder, 'index.html')
+        try:
+            # Validate the path parameter
+            if not path or '/' in path:
+                return send_from_directory(app.static_folder, 'index.html')
+
+            # Safely join the path to the static folder
+            file_path = safe_join(app.static_folder, path)
+            if os.path.exists(file_path):
+                return send_from_directory(app.static_folder, path)
+            else:
+                return send_from_directory(app.static_folder, 'index.html')
+        except Exception as e:
+            return f"An error occurred: {str(e)}", 500
 
     return app
+
 
 if __name__ == '__main__':
     # Hardcoded values for debug mode and port
@@ -33,3 +42,4 @@ if __name__ == '__main__':
 
     app = create_app()
     app.run(debug=debug_mode, port=port)
+    
